@@ -13,6 +13,8 @@ langchain-chroma           # Để kết nối Vector DB
 pypdf                      # Đọc file PDF
 chromadb                   # Cơ sở dữ liệu Vector
 sentence-transformers      # Thư viện nền cho HuggingFace Embeddings
+rank_bm25 
+flashrank
 
 # --- Giao diện & Tiện ích ---
 chainlit               # Giao diện Web App

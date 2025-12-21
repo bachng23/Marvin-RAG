@@ -8,8 +8,9 @@ DB_PATH = os.path.join(PROJECT_ROOT, "chroma_db")
 
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 LLM_MODEL_NAME = "llama3.1"
+RERANKING_MODEL_NAME = "ms-marco-MiniLM-L-12-v2"
 
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
-RETRIEVAL_K = 3
+RETRIEVAL_K = 10
