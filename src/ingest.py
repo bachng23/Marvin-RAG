@@ -5,18 +5,15 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(current_dir, "..", "data", "raw")
-DB_PATH = os.path.join(current_dir, "..", "chroma_db")
+from src.config import DATA_RAW_DIR, DB_PATH, EMBEDDING_MODEL_NAME, CHUNK_SIZE, CHUNK_OVERLAP
+from src.utils import clean_directory
 
 def ingest_pdf(pdf_file_path):
     """
     Progress: PDF file -> Chunking -> Embedding -> Save into DB
     """
     
-    if os.path.exists(DB_PATH):
-        shutil.rmtree(DB_PATH) # Xóa toàn bộ thư mục DB cũ
-        print("🧹 Clean previous data.")
+    clean_directory(DB_PATH)
 
     #Read file pdf
     if not os.path.exists(pdf_file_path):
@@ -29,8 +26,8 @@ def ingest_pdf(pdf_file_path):
 
     #Chunking
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = 500,
-        chunk_overlap = 50,
+        chunk_size = CHUNK_SIZE,
+        chunk_overlap = CHUNK_OVERLAP,
         separators=["\n\n", "\n", " ", ""]
     )
     chunks = text_splitter.split_documents(documents)
@@ -39,7 +36,7 @@ def ingest_pdf(pdf_file_path):
     #Embedding
     print(f"Initializing the Embedding Model...")
     embedding_model = HuggingFaceEmbeddings(
-        model_name = "sentence-transformers/all-mpnet-base-v2"
+        model_name = EMBEDDING_MODEL_NAME
     ) 
 
     #Save into DB
@@ -54,7 +51,4 @@ def ingest_pdf(pdf_file_path):
     return vector_db
 
 if __name__ == "__main__":
-    test_pdf_name = "test.pdf"
-    full_path = os.path.join(DATA_PATH, test_pdf_name)
-
-    ingest_pdf(full_path)
+    pass

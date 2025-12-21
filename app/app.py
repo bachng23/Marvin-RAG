@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.ingest import ingest_pdf
 from src.generation import get_rag_chain
+from src.config import DATA_RAW_DIR
 
 @cl.on_chat_start
 
@@ -25,9 +26,8 @@ async def on_chat_start():
     msg = cl.Message(content=f"Processing '{file.name}'...")
     await msg.send()
 
-    temp_dir = "data/raw"
-    os.makedirs(temp_dir, exist_ok=True)
-    save_path = os.path.join(temp_dir, file.name)
+    os.makedirs(DATA_RAW_DIR, exist_ok=True)
+    save_path = os.path.join(DATA_RAW_DIR, file.name)
 
     with open(file.path, "rb") as f:
         file_content = f.read()
