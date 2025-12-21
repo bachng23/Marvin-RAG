@@ -5,9 +5,11 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.chains import create_history_aware_retriever
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(current_dir, "..", "chroma_db")
+
+from src.config import DB_PATH, EMBEDDING_MODEL_NAME, LLM_MODEL_NAME, RETRIEVAL_K
+from src.prompts import contextualize_q_prompt, qa_prompt
 
 def get_rag_chain():
     """
@@ -16,7 +18,7 @@ def get_rag_chain():
     #Load Vector DB
     print(f"Loading data from Chroma DB")
     embedding_model = HuggingFaceEmbeddings(
-        model_name = "sentence-transformers/all-mpnet-base-v2"
+        model_name = EMBEDDING_MODEL_NAME
     )
 
     vector_db = Chroma(
@@ -25,32 +27,24 @@ def get_rag_chain():
     )
 
     #Create Retriever
-    retriever = vector_db.as_retriever(search_kwargs={"k": 1})
+    retriever = vector_db.as_retriever(search_kwargs={"k": RETRIEVAL_K})
 
     #Load Model LLM
     print(f"Connecting to Llama 3.1...")
     llm = ChatOllama(
-        model="llama3.1",
+        model=LLM_MODEL_NAME,
         temperature=0.3
     )
 
-    #Prompt
-    system_prompt = (
-        "You are an intelligent assistant designed to help with document analysis. "
-        "Use the retrieved context below to answer the user's question accurately. "
-        "If the answer is not in the context, clearly state that you don't know. "
-        "Keep your answer concise and professional."
-        "\n\n"
-        "Context:\n{context}"
+    #Create history aware retriever
+    history_aware_retriever = create_history_aware_retriever(
+        llm,
+        retriever,
+        contextualize_q_prompt
     )
 
-    prompt = ChatPromptTemplate([
-        ("system", system_prompt),
-        ("human", "{input}")
-    ])
-
     #RAG Chain
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+    question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+    rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
     return rag_chain

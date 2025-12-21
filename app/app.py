@@ -1,16 +1,19 @@
 import chainlit as cl
 import os
 import sys
+from langchain_core.messages import HumanMessage, AIMessage
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.ingest import ingest_pdf
+from src.ingest import ingest_files
 from src.generation import get_rag_chain
 from src.config import DATA_RAW_DIR
 
 @cl.on_chat_start
-
 async def on_chat_start():
+    #Initializing memory
+    cl.user_session.set("chat_history", [])
+
     files = None
 
     while files == None:
@@ -18,36 +21,44 @@ async def on_chat_start():
             content="Welcome to Marvin! Please upload a PDF file to begin.",
             accept=["application/pdf"],
             max_size_mb=20,
-            timeout=18000
+            max_files=10,
+            timeout=1800
         ).send()
 
-    file = files[0]
-
-    msg = cl.Message(content=f"Processing '{file.name}'...")
+    #Process each file
+    msg = cl.Message(content=f"Processing {len(files)} files...")
     await msg.send()
 
     os.makedirs(DATA_RAW_DIR, exist_ok=True)
-    save_path = os.path.join(DATA_RAW_DIR, file.name)
+   
+    saved_file_paths = []
 
-    with open(file.path, "rb") as f:
-        file_content = f.read()
+    for file in files:
+        #Create path for saving 
+        save_path = os.path.join(DATA_RAW_DIR, file.name)
+        saved_file_paths.append(save_path)
 
+        with open(file.path, "rb") as f_src:
+            with open(save_path, "wb") as f_dest:
+                f_dest.write(f_src.read())
 
-    with open(save_path, "wb") as f:
-        f.write(file_content)
+    await cl.make_async(ingest_files)(saved_file_paths)
 
-    await cl.make_async(ingest_pdf)(save_path)
-
+    #Initializing chain
     chain = get_rag_chain()
     cl.user_session.set("chain", chain)
 
-    msg.content = f"Done! You can now ask questions about '{file.name}'"
+    file_names = ', '.join([f.name for f in files])
+    msg.content = f"Done! Knowledge base loaded with: '{file_names}'."
     await msg.update()
 
 
 @cl.on_message
 async def main(message: cl.Message):
     chain = cl.user_session.get("chain")
+    
+    #Take history data
+    chat_history = cl.user_session.get("chat_history")
 
     if not chain:
         await cl.Message(content="Please upload a PDF file first!").send()
@@ -56,7 +67,10 @@ async def main(message: cl.Message):
     msg = cl.Message(content="")
     await msg.send()
 
-    res = await chain.ainvoke({"input": message.content})
+    res = await chain.ainvoke({
+        "input": message.content,
+        "chat_history": chat_history
+    })
 
     answer = res["answer"]
     source_documents = res["context"]
@@ -73,3 +87,9 @@ async def main(message: cl.Message):
     msg.content = answer
     msg.elements = text_elements
     await msg.update()        
+
+    #Update history data 
+    chat_history.append(HumanMessage(content=message.content))
+    chat_history.append(AIMessage(content=answer))
+
+    cl.user_session.set("chat_history", chat_history)

@@ -1,4 +1,19 @@
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+#Build Context
+contextualize_q_system_prompt = (
+    "Given a chat history and the latest user question "
+    "which might reference context in the chat history, "
+    "formulate a standalone question which can be understood "
+    "without the chat history. Do NOT answer the question, "
+    "just reformulate it if needed and otherwise return it as is."
+)
+
+contextualize_q_prompt = ChatPromptTemplate([
+    ("system", contextualize_q_system_prompt),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}")
+])
 
 RAG_SYSTEM_PROMPT = (
     "You are an intelligent assistant designed to help with document analysis. "
@@ -9,9 +24,9 @@ RAG_SYSTEM_PROMPT = (
     "Context:\n{context}"
 )
 
-def get_rag_prompt_template():
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", RAG_SYSTEM_PROMPT),
-        ("human", "{input}"),
-    ])
-    return prompt
+#QnA 
+qa_prompt = ChatPromptTemplate([
+    ("system", RAG_SYSTEM_PROMPT),
+    MessagesPlaceholder("chat_history"),
+    ("human", "{input}")        
+])
