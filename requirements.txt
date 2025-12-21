@@ -1,0 +1,19 @@
+# --- Framework chính ---
+langchain
+langchain-community
+langchain-core
+langchain-classic
+
+# --- Các module kết nối (Integrations) ---
+langchain-huggingface      # Để chạy Embedding Open Source
+langchain-ollama           # Để chạy Llama 3.1
+langchain-chroma           # Để kết nối Vector DB
+
+# --- Xử lý dữ liệu & Vector DB ---
+pypdf                      # Đọc file PDF
+chromadb                   # Cơ sở dữ liệu Vector
+sentence-transformers      # Thư viện nền cho HuggingFace Embeddings
+
+# --- Giao diện & Tiện ích ---
+chainlit               # Giao diện Web App
+python-dotenv              # Đọc file cấu hình .env

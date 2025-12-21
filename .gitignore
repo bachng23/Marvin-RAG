@@ -206,25 +206,27 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Python specifics
-__pycache__/
-*.pyc
-*.pyo
-venv/
+# 1. Môi trường ảo (Tuyệt đối không commit cái này)
 .venv/
+venv/
 env/
 
-# Environment variables (BẢO MẬT)
-.venv
+# 2. File rác của Python (Được sinh ra khi chạy code)
+__pycache__/
+*.pyc
 
-# Data & Database (Nặng, không đẩy lên git)
-data/
+# 3. Dữ liệu & Database (Nặng và thay đổi liên tục)
+data/raw/*
+data/processed/*
 chroma_db/
-faiss_index/
 
-# IDE settings
-.vscode/
-.idea/
+# Giữ lại thư mục data rỗng để người khác clone về không bị lỗi
+!data/raw/.gitkeep
+!data/processed/.gitkeep
 
-# OS files
+# 4. Cấu hình bảo mật & Môi trường
+.env
 .DS_Store
+
+# 5. Chainlit (File upload tạm thời)
+.files/
