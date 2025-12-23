@@ -8,7 +8,7 @@ langchain-classic
 langchain-huggingface      # Để chạy Embedding Open Source
 langchain-ollama           # Để chạy Llama 3.1
 langchain-chroma           # Để kết nối Vector DB
-
+langchain-experimental
 # --- Xử lý dữ liệu & Vector DB ---
 pypdf                      # Đọc file PDF
 chromadb                   # Cơ sở dữ liệu Vector

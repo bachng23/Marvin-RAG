@@ -1,7 +1,7 @@
 import os
 
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_experimental.text_splitter import SemanticChunker
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from typing import List
@@ -17,11 +17,12 @@ def ingest_files(pdf_file_paths: List[str]):
     #Delete old database
     clean_directory(DB_PATH)
 
-    #Define Text Splitter
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size = CHUNK_SIZE,
-        chunk_overlap = CHUNK_OVERLAP,
-        separators=["\n\n", "\n", " ", ""]
+    #Build semantic splitter
+    embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
+
+    text_splitter = SemanticChunker(
+        embeddings=embedding_model,
+        breakpoint_threshold_type="percentile" #percentile = cut in the most different point
     )
 
     all_chunks = []

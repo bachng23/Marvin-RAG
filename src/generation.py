@@ -7,7 +7,7 @@ from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains import create_history_aware_retriever
 from langchain_core.documents import Document
 
-# --- CÁC IMPORT MỚI CHO ADVANCED RAG ---
+# --- ADVANCED RAG ---
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
